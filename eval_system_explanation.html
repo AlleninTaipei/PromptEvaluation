@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 提示詞評估系統流程說明</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+            line-height: 1.6;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            background: #ecf0f1;
+            padding: 10px;
+            border-left: 4px solid #3498db;
+        }
+        .flow-diagram {
+            background: #fff;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 2px solid #3498db;
+        }
+        .step {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            position: relative;
+        }
+        .step-number {
+            background: #fff;
+            color: #667eea;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .arrow {
+            text-align: center;
+            font-size: 24px;
+            color: #3498db;
+            margin: 10px 0;
+        }
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .example-box {
+            background: #e8f4f8;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .result-box {
+            background: #d5f4e6;
+            border-left: 4px solid #27ae60;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .score {
+            display: inline-block;
+            background: #27ae60;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background: #3498db;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 AI 提示詞評估系統 - 完整流程說明</h1>
+        
+        <div class="flow-diagram">
+            <h2>📊 系統流程圖</h2>
+            
+            <div class="step">
+                <span class="step-number">1</span>
+                <strong>生成測試資料集</strong>
+                <div style="margin-left: 40px; margin-top: 10px;">
+                    函數：generate_dataset() → 產生 3 個 AWS 測試任務
+                </div>
+            </div>
+            
+            <div class="arrow">↓</div>
+            
+            <div class="step">
+                <span class="step-number">2</span>
+                <strong>執行測試任務</strong>
+                <div style="margin-left: 40px; margin-top: 10px;">
+                    函數：run_prompt() → 讓 Claude 解決任務
+                </div>
+            </div>
+            
+            <div class="arrow">↓</div>
+            
+            <div class="step">
+                <span class="step-number">3</span>
+                <strong>雙重評分</strong>
+                <div style="margin-left: 40px; margin-top: 10px;">
+                    ① grade_syntax() → 檢查語法是否正確<br>
+                    ② grade_by_model() → AI 評估品質
+                </div>
+            </div>
+            
+            <div class="arrow">↓</div>
+            
+            <div class="step">
+                <span class="step-number">4</span>
+                <strong>計算總分並輸出結果</strong>
+                <div style="margin-left: 40px; margin-top: 10px;">
+                    最終分數 = (語法分數 + AI 評分) / 2
+                </div>
+            </div>
+        </div>
+
+        <h2>📝 具體範例演示</h2>
+
+        <h3>步驟 1️⃣：生成測試資料集</h3>
+        <div class="example-box">
+            <strong>系統提示：</strong>「請生成 3 個 AWS 相關的測試任務...」
+            <br><br>
+            <strong>Claude 生成的測試任務（範例一）：</strong>
+        </div>
+        
+        <div class="code-block">{
+  "task": "創建一個 Lambda 函數的 JSON 配置，設定資料庫連線環境變數",
+  "format": "json",
+  "solution_criteria": "應包含資料庫主機、端口、憑證等環境變數"
+}</div>
+
+        <h3>步驟 2️⃣：執行測試任務</h3>
+        <div class="example-box">
+            <strong>系統發送給 Claude：</strong>
+            <div style="margin-left: 20px; margin-top: 10px;">
+                「請解決以下任務：創建一個 Lambda 函數的 JSON 配置...<br>
+                ⚠️ 只回傳程式碼，不要解釋」
+            </div>
+        </div>
+        
+        <div class="result-box">
+            <strong>Claude 的輸出：</strong>
+        </div>
+        
+        <div class="code-block">{
+  "lambda_function": {
+    "FunctionName": "database-connection-handler",
+    "Runtime": "python3.9",
+    "Environment": {
+      "Variables": {
+        "DB_HOST": "your-database-hostname.rds.amazonaws.com",
+        "DB_PORT": "5432",
+        "DB_NAME": "myappdatabase",
+        "DB_USERNAME": "dbadminuser",
+        "DB_PASSWORD": "{{resolve:secretsmanager:...}}",
+        "DB_SSL_MODE": "require"
+      }
+    },
+    "Timeout": 30,
+    "MemorySize": 256
+  }
+}</div>
+
+        <h3>步驟 3️⃣：雙重評分系統</h3>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>評分方式</th>
+                    <th>檢查內容</th>
+                    <th>範例分數</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>① 語法檢查</strong><br>(grade_syntax)</td>
+                    <td>
+                        執行 <span class="highlight">json.loads()</span> 檢查是否為有效 JSON<br>
+                        ✅ 成功 → 10 分<br>
+                        ❌ 失敗 → 0 分
+                    </td>
+                    <td><span class="score">10 分</span></td>
+                </tr>
+                <tr>
+                    <td><strong>② AI 品質評分</strong><br>(grade_by_model)</td>
+                    <td>
+                        讓 Claude 分析：<br>
+                        • 優點（strengths）<br>
+                        • 缺點（weaknesses）<br>
+                        • 評分理由（reasoning）<br>
+                        • 最終分數 1-10
+                    </td>
+                    <td><span class="score">7 分</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>AI 評分的詳細回饋</h3>
+        <div class="code-block">{
+  "strengths": [
+    "正確使用 Secrets Manager 保護密碼",
+    "包含必要的資料庫連線參數"
+  ],
+  "weaknesses": [
+    "缺少進階安全設定",
+    "可以更動態化配置"
+  ],
+  "reasoning": "解決方案展示了良好的基礎實踐，但缺少進階的安全性...",
+  "score": 7
+}</div>
+
+        <h3>步驟 4️⃣：計算最終分數</h3>
+        <div class="result-box">
+            <strong>計算公式：</strong>
+            <div class="code-block">最終分數 = (語法分數 + AI 評分) / 2
+         = (10 + 7) / 2
+         = 8.5</div>
+        </div>
+
+        <h2>📈 完整評估結果</h2>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>任務</th>
+                    <th>格式</th>
+                    <th>語法分數</th>
+                    <th>AI 評分</th>
+                    <th>最終分數</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Lambda JSON 配置</td>
+                    <td>JSON</td>
+                    <td>10</td>
+                    <td>7</td>
+                    <td><strong>8.5</strong></td>
+                </tr>
+                <tr>
+                    <td>提取 AWS Region 函數</td>
+                    <td>Python</td>
+                    <td>10</td>
+                    <td>6</td>
+                    <td><strong>8.0</strong></td>
+                </tr>
+                <tr>
+                    <td>驗證 EC2 ID 的 Regex</td>
+                    <td>Regex</td>
+                    <td>10</td>
+                    <td>6</td>
+                    <td><strong>8.0</strong></td>
+                </tr>
+                <tr style="background: #3498db; color: white; font-weight: bold;">
+                    <td colspan="4">平均分數</td>
+                    <td>8.17</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>💡 系統的價值</h2>
+        <div class="example-box">
+            <strong>這個評估系統可以用來：</strong>
+            <ul>
+                <li>📊 <strong>比較不同提示詞</strong>的效果（例如：加上「請使用最佳實踐」會提高分數嗎？）</li>
+                <li>🔄 <strong>測試不同模型版本</strong>（Haiku vs Sonnet vs Opus）</li>
+                <li>📈 <strong>追蹤模型改進</strong>（新版本是否比舊版本更好？）</li>
+                <li>🎯 <strong>自動化測試</strong>（每次更新提示詞後自動跑評估）</li>
+            </ul>
+        </div>
+
+        <h2>🔑 核心概念總結</h2>
+        <div class="result-box">
+            <ol>
+                <li><strong>自動化測試</strong>：系統自動生成測試案例、執行、評分</li>
+                <li><strong>客觀評估</strong>：結合語法檢查（絕對正確性）+ AI 評分（主觀品質）</li>
+                <li><strong>可重複執行</strong>：可以多次跑同樣的測試，比較結果</li>
+                <li><strong>量化結果</strong>：用數字（0-10分）來衡量 AI 的表現</li>
+            </ol>
+        </div>
+    </div>
+</body>
+</html>
